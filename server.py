@@ -8,6 +8,7 @@ from aiohttp import web
 from PIL import Image
 
 from rotate_captcha_crack.common import device
+from rotate_captcha_crack.const import DEFAULT_CLS_NUM
 from rotate_captcha_crack.logging import RCCLogger
 from rotate_captcha_crack.model import RotNetR, WhereIsMyModel
 from rotate_captcha_crack.utils import process_captcha
@@ -21,9 +22,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--index", "-i", type=int, default=-1, help="Use which index")
 opts = parser.parse_args()
 
-model = RotNetR(cls_num=180, train=False)
+model = RotNetR(cls_num=DEFAULT_CLS_NUM, train=False)
 model_path = WhereIsMyModel(model).with_index(opts.index).model_dir / "best.pth"
-model.load_state_dict(torch.load(str(model_path)))
+model.load_state_dict(torch.load(str(model_path), map_location=torch.device('cpu')))
 model = model.to(device=device)
 model.eval()
 
