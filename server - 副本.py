@@ -2,7 +2,6 @@ import argparse
 import functools
 import io
 import json
-import base64
 
 import torch
 from aiohttp import web
@@ -30,19 +29,15 @@ model = model.to(device=device)
 model.eval()
 
 
-
-
 @routes.post('/')
 async def hello(request: web.Request):
     resp = {'err': {'code': 0, 'msg': 'success'}}
 
     try:
-        data = await request.post()
-        img_base64 = data.get('img', "Anonymous").replace(" ","+")
-
-        img_bytes = base64.b64decode(img_base64)
+        multipart = await request.multipart()
+        img_part = await multipart.next()
+        img_bytes = await img_part.read()
         img = Image.open(io.BytesIO(img_bytes))
-        # img.save("C:/Users/admin/rotate-captcha-crack/datasets/download666.png")
 
         with torch.no_grad():
             img_ts = process_captcha(img)
@@ -53,7 +48,6 @@ async def hello(request: web.Request):
     except Exception as err:
         resp['err']['code'] = 0x0001
         resp['err']['msg'] = str(err)
-        # resp['err']['img'] = img_base64
         return web.json_response(resp, status=400, dumps=dumps)
 
     return web.json_response(resp, dumps=dumps)
