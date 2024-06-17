@@ -15,6 +15,7 @@ from rotate_captcha_crack.model import RotNetR
 from rotate_captcha_crack.trainer import Trainer
 from rotate_captcha_crack.utils import slice_from_range
 from rotate_captcha_crack.visualizer import visualize_train
+from rotate_captcha_crack.dataset.pipeline import SequenceRoot
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -25,11 +26,13 @@ if __name__ == "__main__":
 
     #################################
     ### Custom configuration area ###
-    dataset_root = Path("D:/Dataset/Streetview/data/data")
+    dataset_root = Path("C:/Users/admin/rotate-captcha-crack/trainimg/")
 
-    img_paths = google_street_view.get_paths(dataset_root)
+    #img_paths = list(dataset_root.glob('*.jpg'))
+    img_paths = SequenceRoot(list(dataset_root.glob('*.jpg')))
     cls_num = DEFAULT_CLS_NUM
     labelling = CircularSmoothLabel(cls_num)
+    #google_street_view.get_paths()
 
     train_img_paths = slice_from_range(img_paths, (0.0, 0.98))
     train_dataset = train_img_paths | path_to_tensor | Rotator() | DEFAULT_NORM | labelling | tuple
@@ -41,14 +44,17 @@ if __name__ == "__main__":
         train_dataset,
         batch_size=64,
         num_workers=num_workers,
-        shuffle=True,
-        drop_last=True,
+        #shuffle=True,
+        #drop_last=True,
+         shuffle=False,
+         drop_last=False,
     )
     val_dataloader = DataLoader(
         val_dataset,
         batch_size=64,
         num_workers=num_workers,
-        drop_last=True,
+        #drop_last=True,
+        drop_last= False
     )
 
     model = RotNetR(cls_num)

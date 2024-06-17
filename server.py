@@ -1,12 +1,13 @@
-import argparse
+﻿import argparse
 import functools
 import io
 import json
 import base64
+import time
 
 import torch
 from aiohttp import web
-from PIL import Image
+from PIL import Image,ImageDraw
 
 from rotate_captcha_crack.common import device
 from rotate_captcha_crack.const import DEFAULT_CLS_NUM
@@ -42,10 +43,20 @@ async def hello(request: web.Request):
 
         img_bytes = base64.b64decode(img_base64)
         img = Image.open(io.BytesIO(img_bytes))
-        # img.save("C:/Users/admin/rotate-captcha-crack/datasets/download666.png")
+
+        circle_image = Image.new("RGBA", img.size)
+        draw = ImageDraw.Draw(circle_image)
+        draw.ellipse([(0, 0), img.size], fill=(255, 255, 255))
+        result = Image.new("RGBA", img.size)
+        result.paste(img, mask=circle_image)
+        # 保存截取后的图像
+        result.save("C:/Users/admin/rotate-captcha-crack/datasets/"+time.strftime('%Y-%m-%d %H-%M-%S.png', time.localtime(time.time())))
+
+
+
 
         with torch.no_grad():
-            img_ts = process_captcha(img)
+            img_ts = process_captcha(result)
             img_ts = img_ts.to(device=device)
             predict = model.predict(img_ts) * 360
             resp['pred'] = predict

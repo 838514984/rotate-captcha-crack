@@ -23,7 +23,7 @@ if __name__ == "__main__":
         model = model.to(device=device)
         model.eval()
 
-        img = Image.open("datasets/download.png")
+        img = Image.open("datasets/download.jpg")
         img_ts = process_captcha(img)
         img_ts = img_ts.to(device=device)
 
